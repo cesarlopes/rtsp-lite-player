@@ -21,6 +21,7 @@ endif()
 add_executable(rtsp_lite_player
     src/main.cpp
     src/app.rc
+    tapo-camera-final.ico
 )
 
 set_target_properties(rtsp_lite_player PROPERTIES

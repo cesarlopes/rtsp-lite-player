@@ -19,6 +19,7 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <windowsx.h>
 #endif
 
 #include <nlohmann/json.hpp>
@@ -277,7 +278,7 @@ public:
         hwnd_ = CreateWindowExW(
             0,
             class_name(),
-            L"Tapo RTSP Player",
+            L"RTSP Lite Player",
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT,
             CW_USEDEFAULT,
@@ -323,7 +324,7 @@ public:
 
 private:
     static const wchar_t* class_name() {
-        return L"TapoRtspMosaicWindow";
+        return L"RtspLitePlayerMosaicWindow";
     }
 
     static void register_class() {
@@ -331,6 +332,7 @@ private:
         std::call_once(once, [] {
             WNDCLASSEXW wc{};
             wc.cbSize = sizeof(wc);
+            wc.style = CS_DBLCLKS;
             wc.lpfnWndProc = &MosaicWindow::window_proc;
             wc.hInstance = GetModuleHandleW(nullptr);
             wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
@@ -356,6 +358,9 @@ private:
         switch (message) {
             case WM_ERASEBKGND:
                 return 1;
+            case WM_LBUTTONDBLCLK:
+                self->handle_double_click(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+                return 0;
             case WM_PAINT: {
                 PAINTSTRUCT ps;
                 HDC dc = BeginPaint(hwnd, &ps);
@@ -417,6 +422,11 @@ private:
             return;
         }
 
+        if (focused_index_ >= 0 && static_cast<size_t>(focused_index_) < states_.size()) {
+            draw_tile(dc, client, *states_[focused_index_]);
+            return;
+        }
+
         const int client_width = client.right - client.left;
         const int client_height = client.bottom - client.top;
         const auto [columns, rows] = grid_for_count(states_.size());
@@ -438,6 +448,39 @@ private:
 
             draw_tile(dc, tile, *states_[i]);
         }
+    }
+
+    void handle_double_click(int x, int y) {
+        if (focused_index_ >= 0) {
+            focused_index_ = -1;
+            InvalidateRect(hwnd_, nullptr, FALSE);
+            return;
+        }
+
+        const int index = tile_index_at(x, y);
+        if (index >= 0) {
+            focused_index_ = index;
+            InvalidateRect(hwnd_, nullptr, FALSE);
+        }
+    }
+
+    int tile_index_at(int x, int y) const {
+        RECT client{};
+        GetClientRect(hwnd_, &client);
+        const int client_width = client.right - client.left;
+        const int client_height = client.bottom - client.top;
+        if (client_width <= 0 || client_height <= 0 || states_.empty()) {
+            return -1;
+        }
+
+        const auto [columns, rows] = grid_for_count(states_.size());
+        const int tile_width = std::max(1, client_width / columns);
+        const int tile_height = std::max(1, client_height / rows);
+        const int col = std::min(columns - 1, std::max(0, x / tile_width));
+        const int row = std::min(rows - 1, std::max(0, y / tile_height));
+        const int index = row * columns + col;
+
+        return index >= 0 && static_cast<size_t>(index) < states_.size() ? index : -1;
     }
 
     void draw_tile(HDC dc, const RECT& tile, CameraState& state) {
@@ -515,6 +558,7 @@ private:
 
     HWND hwnd_ = nullptr;
     std::vector<std::shared_ptr<CameraState>> states_;
+    int focused_index_ = -1;
 };
 
 int play_once(const CameraConfig& camera, const std::shared_ptr<CameraState>& state) {
