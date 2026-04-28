@@ -1,0 +1,39 @@
+# Local configuration with camera credentials
+config.json
+config.*.json
+!config.example.json
+
+# Build artifacts
+build/
+out/
+bin/
+obj/
+*.exe
+*.dll
+*.lib
+*.pdb
+*.ilk
+*.obj
+*.res
+
+# Local dependency checkout/cache
+.vcpkg/
+vcpkg_installed/
+
+# Generated media/output
+output/
+*.mkv
+*.mp4
+*.ts
+*.m3u8
+
+# IDE/editor files
+.vs/
+.vscode/
+*.user
+*.suo
+
+# OS files
+Thumbs.db
+desktop.ini
+$null

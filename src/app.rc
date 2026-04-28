@@ -1,0 +1,38 @@
+#include <winres.h>
+
+#define APP_VERSION_MAJOR 0
+#define APP_VERSION_MINOR 1
+#define APP_VERSION_PATCH 0
+#define APP_VERSION_BUILD 0
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION APP_VERSION_MAJOR,APP_VERSION_MINOR,APP_VERSION_PATCH,APP_VERSION_BUILD
+ PRODUCTVERSION APP_VERSION_MAJOR,APP_VERSION_MINOR,APP_VERSION_PATCH,APP_VERSION_BUILD
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "Cesar Lopes"
+            VALUE "FileDescription", "RTSP Lite Player"
+            VALUE "FileVersion", "0.1.0.0"
+            VALUE "InternalName", "rtsp_lite_player"
+            VALUE "OriginalFilename", "RtspLitePlayer.exe"
+            VALUE "ProductName", "RTSP Lite Player"
+            VALUE "ProductVersion", "0.1.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

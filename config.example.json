@@ -1,0 +1,20 @@
+{
+  "cameras": [
+    {
+      "name": "tapo_sala",
+      "host": "192.168.0.50",
+      "port": 554,
+      "username": "usuario_tapo",
+      "password": "senha_tapo",
+      "path": "/stream2",
+      "rtsp_transport": "tcp",
+      "reconnect_delay_ms": 3000,
+      "open_timeout_ms": 2000,
+      "read_timeout_ms": 3000,
+      "analyze_duration_us": 0,
+      "probe_size": 16384,
+      "max_delay_us": 200000,
+      "fast_open": true
+    }
+  ]
+}
