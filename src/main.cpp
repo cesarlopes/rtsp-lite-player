@@ -272,18 +272,18 @@ public:
         : states_(std::move(states)) {
         register_class();
 
-        RECT rect{0, 0, 1280, 720};
-        AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+        const DWORD window_style = WS_OVERLAPPEDWINDOW;
+        const RECT window_rect = centered_window_rect(window_style);
 
         hwnd_ = CreateWindowExW(
             0,
             class_name(),
             L"RTSP Lite Player",
-            WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-            CW_USEDEFAULT,
-            CW_USEDEFAULT,
-            rect.right - rect.left,
-            rect.bottom - rect.top,
+            window_style | WS_VISIBLE,
+            window_rect.left,
+            window_rect.top,
+            window_rect.right - window_rect.left,
+            window_rect.bottom - window_rect.top,
             nullptr,
             nullptr,
             GetModuleHandleW(nullptr),
@@ -325,6 +325,33 @@ public:
 private:
     static const wchar_t* class_name() {
         return L"RtspLitePlayerMosaicWindow";
+    }
+
+    static RECT centered_window_rect(DWORD window_style) {
+        MONITORINFO monitor_info{};
+        monitor_info.cbSize = sizeof(monitor_info);
+
+        const POINT origin{0, 0};
+        HMONITOR monitor = MonitorFromPoint(origin, MONITOR_DEFAULTTOPRIMARY);
+        if (!GetMonitorInfoW(monitor, &monitor_info)) {
+            monitor_info.rcWork = RECT{0, 0, 1280, 720};
+        }
+
+        const RECT work = monitor_info.rcWork;
+        const int work_width = std::max(1, static_cast<int>(work.right - work.left));
+        const int work_height = std::max(1, static_cast<int>(work.bottom - work.top));
+        const int client_width = std::min(work_width, std::max(640, work_width * 8 / 10));
+        const int client_height = std::min(work_height, std::max(360, work_height * 8 / 10));
+
+        RECT rect{0, 0, client_width, client_height};
+        AdjustWindowRect(&rect, window_style, FALSE);
+
+        const int window_width = std::min(work_width, static_cast<int>(rect.right - rect.left));
+        const int window_height = std::min(work_height, static_cast<int>(rect.bottom - rect.top));
+        const int x = work.left + std::max(0, (work_width - window_width) / 2);
+        const int y = work.top + std::max(0, (work_height - window_height) / 2);
+
+        return RECT{x, y, x + window_width, y + window_height};
     }
 
     static void register_class() {
